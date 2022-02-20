@@ -12,6 +12,7 @@ class NewsPage extends StatefulWidget {
 class _NewsPageState extends State<NewsPage> {
   var jsonData;
   List<ThailandNewsData> dataList = [];
+  // ignore: non_constant_identifier_names
   Future<String> _GetNewsAPI() async {
     var response = await Http.get(
       'https://newsapi.org/v2/top-headlines?country=th&apiKey=5fb86db5805444939302cd9db4c1b72d'
@@ -19,7 +20,8 @@ class _NewsPageState extends State<NewsPage> {
     jsonData = json.decode(utf8.decode(response.bodyBytes));
     
     for (var data in jsonData['articles']) {
-      print(data['title']);
+      ThailandNewsData news = ThailandNewsData(data['title'], data['description'], data['urlToImage']);
+      dataList.add(news);
     }
     
     return 'ok';
@@ -35,18 +37,46 @@ class _NewsPageState extends State<NewsPage> {
             future: _GetNewsAPI(),
             builder: (BuildContext context, AsyncSnapshot snapshot) {
               if (snapshot.hasData) {
-                return ListView(
-            children: <Widget>[
-              Card(
-                child: Image.network(
-                  'https://c.tenor.com/_4YgA77ExHEAAAAd/rick-roll.gif'),
-                semanticContainer: true,
-                clipBehavior: Clip.antiAliasWithSaveLayer,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10.0)),
-                margin: EdgeInsets.all(15),
-              ),
-            ],
+                return ListView.builder(itemCount: dataList.length, 
+                itemBuilder: (context, index){
+                  return Container(
+                    child: Column(
+                      children: <Widget>[
+                        Card(
+                          child: Image.network(
+                            '${dataList[index].urlToImage}'),
+                          semanticContainer: true,
+                          clipBehavior: Clip.antiAliasWithSaveLayer,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10.0)),
+                          margin: EdgeInsets.all(15),
+                          ),
+                        Container(
+                          margin: EdgeInsets.all(15),
+                          child: Align(
+                            child: Text(
+                              '${dataList[index].title}',
+                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                          ),
+                        Container(
+                          margin: EdgeInsets.symmetric(horizontal: 15, vertical: 2),
+                          child: Align(
+                            child: Text(
+                              '${dataList[index].description}',
+                              style: TextStyle(color: Colors.grey[600]),
+                            ),
+                          ),
+                          ),
+                          SizedBox(
+                            height: 20,
+                          ),
+                      ],
+                    ),
+                  );
+                },
+                );
               } else {
                 return Container(
                   child: CircularProgressIndicator(),
@@ -55,8 +85,7 @@ class _NewsPageState extends State<NewsPage> {
             },
           )
         ),
-      ),
-    );
+      );
   }
 }
 
